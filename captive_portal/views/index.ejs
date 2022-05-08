@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%=title %> WIFI
+    </title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+    <div class="page_wrapper">
+        <!--MISSION STATEMENT-->
+        <div class="table_cell half">
+            <div class="content">
+                <div class="carousel">
+                    <div class="carousel_item_1" id="carousel_item_1">
+                        <h2>Only two things are infinite,</h2>
+                        <h3>the universe and human stupidity"</h3>
+                        <h4>-Albert Einstein</h4>
+
+                    </div>
+                    <div class="carousel_item_2" id="carousel_item_2">
+                        <h2>"The science of today </h2>
+                        <h3>is the technology of tomorrow."</h3>
+                        <h4>-Edward Teller</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="overlay"><img src="/img/hex.png" class="hex"></div>
+            <div class="overlay_upside"><img src="img/hex2.png" class="hex_top"></div>
+            <div><img src="img/dna.png" class="hex overlay_right"></div>
+        </div>
+        <!--Login section-->
+        <div class="table_cell half right">
+            <h2 style="margin-right: 10px;"> Welcome to <%=title%> WIFI</h2>
+            <div class="content sizeBox">
+                <form action="password" method="post">
+                    <!-- <input type="text" style="margin-top: 15px; border-radius: 5px; width: 200px; height: 35px;" -->
+                        <!-- name="username" id="username" placeholder="username"> -->
+                    <input type="password" style="margin-top: 5px; margin-left: 100px; border-radius: 5px; width: 200px; height: 35px;"
+                        name="password" id="password" placeholder=" enter your password">
+                    <button type="submit" style="margin-top: 20px; margin-left: 130px; border-radius: 5px; width: 100px; height: 30px;">
+                        Submit!
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        //handle carousel text
+        var item1 = document.getElementById("carousel_item_1");
+        var item2 = document.getElementById("carousel_item_2");
+        var x = 1;
+        setInterval(function () {
+            console.log(x);
+            if (x == 1) {
+                swap_item("1");
+            } else {
+                x = 0;
+                swap_item("2");
+            }
+            x++;
+
+        }, 6000);
+
+        function swap_item(element) {
+            if (element == "1") {
+                item1.style.marginLeft = "-100%";
+                item2.style.marginLeft = "0%";
+            } else {
+                item1.style.marginLeft = "0%";
+                item2.style.marginLeft = "-100%";
+            }
+        }
+    </script>
+
+</body>
+
+</html>
