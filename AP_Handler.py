@@ -1,5 +1,3 @@
-import Deauthentication as deauth
-from CaptivePortal import CaptivePortal as CP
 from scapy.all import *
 from scapy.layers.dot11 import Dot11, Dot11Beacon, Dot11Elt
 
@@ -9,7 +7,8 @@ essids_set = set()
 ESSID = 0  # Ap's name
 BSSID = 1  # Ap's mac address
 CHANNEL = 2  # Ap's channel
-search_time = 30
+search_time = 60
+
 
 def change_channel(interface):
     channel_switch = 1
@@ -41,20 +40,18 @@ def packet_handler(packet):
             channel = stats.get("channel")
             # Add the new found AP to the AP list
             APs_list.append([essid, bssid, channel])
-            # print("AP name: %s,\t BSSID: %s,\t Channel: %d." % (essid, bssid, channel))
 
 
-# ## After the user choose the AP he want to attack, we want to set the interface's channel to the same channel as
-# the choosen AP.
+#  After the user choose the AP he want to attack, we want to set the interface's channel to the same channel as the choosen AP.
 def set_channel(channel, interface):
-    os.system('iwconfig %s channel %d' % (interface, channel))
+    if os.system('iwconfig %s channel %d' % (interface, channel)) != 0:
+        sys.exit("can't switch between channels")
 
 
-def APs_scan(interface):
+def APs_scanner(interface):
     print("*** Step 2:  Choosing an network to attack. *** \n")
     input("Press Enter to continue.........")
     channel_changer = threading.Thread(target=change_channel, args=(interface,))
-    # A daemon thread runs without blocking the main program from exiting
     channel_changer.daemon = True
     channel_changer.start()
     print("\n Scanning for networks...\n")
@@ -78,7 +75,7 @@ def APs_scan(interface):
         print("You choose the AP: [" + str(ap_index) + "] - BSSID: " + APs_list[ap_index][
             BSSID] + " Channel:" + str(
             APs_list[ap_index][CHANNEL]) + " AP name: " + APs_list[ap_index][ESSID])
-        # Set the channel as the choosen AP channel in order to send packets to connected clients later
+        # Set the channel as the choosen AP channel in order to send packets to connected devices later
         set_channel(int(APs_list[ap_index][CHANNEL]), interface)
         return APs_list[ap_index]
     else:
@@ -89,73 +86,77 @@ def APs_scan(interface):
             deactivate_monitor(interface)
             sys.exit(0)
         else:
-            APs_scan(interface)
+            APs_scanner(interface)
 
 
-### In this fucntion we scan the network for clients who are connected to the choosen AP.
-### We present to the user all the clients that were found, and he choose which client he want to attack.
-def users_scan(interface, ap):
-    # We need the client to send packet to the AP and it may take time, so we double the scan time
-    print("\nScanning for clients that connected to: " + ap[ESSID] + " ...")
-    '''
-    channel_changer = Thread(target=change_channel)
-    # A daemon thread runs without blocking the main program from exiting
-    channel_changer.daemon = True
-    channel_changer.start()
-    '''
-    # Sniffing packets - scanning the network for clients which are connected to the choosen AP
+### In this fucntion we scan the network for devices who are connected to the choosen AP.
+### We present to the user all the devices that were found, and he choose which device he want to attack.
+def devices_scanner(interface, ap):
+    print("\nScanning for devices that connected to: " + ap[ESSID] + " ...")
+    # Sniffing packets - scanning the network for devices which are connected to the choosen AP
     global network
     network = ap
-    sniff(iface=interface, prn=client_scan_pkt, timeout=search_time)
-    num_of_client = len(users_list)
-    # If at least one client was found, print all the found clients
-    if num_of_client > 0:
-        # If at least 1 client was found.
-        print("\n*************** Clients Table ***************\n")
-        for x in range(num_of_client):
+    # We need the device to send packet to the AP and it may take time, so we double the scan time
+    sniff(iface=interface, prn=device_scan_pkt, timeout=search_time * 2)
+    num_of_devices = len(users_list)
+    # If at least one device was found, print all the found devices
+    if num_of_devices > 0:
+        # If at least 1 device was found.
+        print("\n*************** Devices Table ***************\n")
+        for x in range(num_of_devices):
             print("[" + str(x) + "] - " + users_list[x])
         print("\n************** FINISH SCANNING **************\n")
         # Choosing the AP to attack
-        client_index = input(
-            "Please enter the number of the client you want to attack or enter 'R' if you want to rescan: ")
-        if client_index == 'R':
+        device_index = input(
+            "Please enter the number of the device you want to attack or enter 'R' if you want to rescan: ")
+        if device_index == 'R':
             # Rescan
-            users_scan(interface, ap)
-        elif client_index.isnumeric():
-            # Client was choosen
-            # Print the choosen AP
-            print("You choose the client: [" + client_index + "] - " + users_list[int(client_index)])
-            return users_list[int(client_index)]
+            devices_scanner(interface, ap)
+        elif device_index.isnumeric():
+            # device was chosen
+            # Print the chosen AP
+            print("You choose the device: [" + device_index + "] - " + users_list[int(device_index)])
+            return users_list[int(device_index)]
             # deauth_attack()
     else:
-        # If no client was found.
-        rescan = input("No clients were found. Do you want to rescan? [Y/n] ")
+        # If no device was found.
+        rescan = input("No devices were found. Do you want to rescan? [Y/n] ")
         if rescan == "n":
             print("  Sorry :(  ")
             deactivate_monitor(interface)
             sys.exit(0)
         else:
-            users_scan(interface, ap)
+            devices_scanner(interface, ap)
 
 
-### sniff(..., prn = client_scan_pkt, ...)
+### sniff(..., prn = device_scan_pkt, ...)
 ### The argument 'prn' allows us to pass a function that executes with each packet sniffed
-def client_scan_pkt(pkt):
-    # We are interested in packets that send from the choosen AP to a client (not broadcast)
+def device_scan_pkt(pkt):
+    # We are interested in packets that send from the chosen AP to a device (not broadcast)
     # ff:ff:ff:ff:ff:ff - broadcast address
     if (pkt.addr2 == network[BSSID] or pkt.addr3 == network[BSSID]) and pkt.addr1 != "ff:ff:ff:ff:ff:ff":
         if pkt.addr1 not in users_list:
             if pkt.addr2 != pkt.addr1 and pkt.addr1 != pkt.addr3:
-                # Add the new found client to the client list
+                # Add the new-found device to the device list
                 users_list.append(pkt.addr1)
-                print("Client with MAC address: " + pkt.addr1 + " was found.")
+                print("Device with MAC address: " + pkt.addr1 + " was found.")
 
 
-def activate_monitor():
-    print("*** Step 1:  Choosing an interface to put in 'monitor mode'. *** \n")
+def choose_interface(flag):
+    if flag == 1:
+        print("*** Step 1:  Choosing an interface to put in 'monitor mode'. *** \n")
+    else:
+        print("*** Choosing different interface to put in 'hotspot mode'. *** \n")
     input("Press Enter to continue.........")
     os.system('ifconfig')
-    interface = input("Please enter the interface name you want to put in 'monitor mode': ")
+    if flag == 1:
+        interface = input("Please enter the interface name you want to put in 'monitor mode': ")
+    else:
+        interface = input("Please enter the interface name you want to put in 'hotspot mode': ")
+    return interface
+
+
+def activate_monitor(interface):
     # Put the choosen interface in 'monitor mode'
     try:
         if os.system('ifconfig ' + interface + ' down') != 0:
@@ -167,23 +168,18 @@ def activate_monitor():
     except:
         sys.exit("can't activate monitor mode on " + interface)
     return interface
-    # os.system('iwconfig') # Check
 
 
 def deactivate_monitor(interface):
-    print("\n*** Step 5: Put the interface back in 'managed mode'. *** \n")
-    input("Press Enter in order to put " + interface + " in 'managed mode' .........")
-    # Put the choosen interface back in 'managed mode'
-    os.system('ifconfig ' + interface + ' down')
-    os.system('iwconfig ' + interface + ' mode managed')
-    os.system('ifconfig ' + interface + ' up')
-    print("[**] - The interface: " + interface + ", is now in Managed Mode. \nYou can check it here : \n")
-    # os.system('iwconfig')
-
-
-def start(self, user, network):
-    CP.start()
-    deauthAttack = threading.Thread(target=deauth.start, args=(user, network))
-    deauthAttack.start()
-    deauthAttack.join()
-    self.deactivate_monitor()
+    try:
+        print("\n*** Step 5: Put the interface back in 'managed mode'. *** \n")
+        input("Press Enter in order to put " + interface + " in 'managed mode' .........")
+        # Put the choosen interface back in 'managed mode'
+        if os.system('ifconfig ' + interface + ' down') != 0:
+            raise Exception()
+        if os.system('iwconfig ' + interface + ' mode managed') != 0:
+            raise Exception()
+        if os.system('ifconfig ' + interface + ' up') != 0:
+            raise Exception()
+    except:
+        sys.exit("can't deactivate monitor mode on " + interface)
