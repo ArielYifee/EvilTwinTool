@@ -7,7 +7,7 @@ def deauth_initial(bool):
     flag = bool
 
 
-def start(interface, ap, device):
+def start(interface, ap, device="ff:ff:ff:ff:ff:ff"):
     """
     RadioTap()/Dot11(...)/Dot11Deauth()
     addr1: destination MAC address

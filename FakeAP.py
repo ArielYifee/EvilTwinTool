@@ -1,22 +1,10 @@
 import os
 
-### Console colors
-W = '\033[0m'  # white
-R = '\033[31m'  # red
-G = '\033[32m'  # green
-O = '\033[33m'  # orange
-B = '\033[34m'  # blue
-P = '\033[35m'  # purple
-C = '\033[36m'  # cyan
-GR = '\033[37m'  # gray
-T = '\033[93m'  # tan
 
-
-def reset_setting():
+def reset_setting(interface=None):
     # Stop and kill the hostapd and dnsmasq services.
     os.system('service hostapd stop')  # hostapd (host access point daemon) for make access point
     os.system('service dnsmasq stop')  # dsnmasq is to make DNS and DHCP server
-    os.system('service apache2 stop')
     os.system('killall dnsmasq >/dev/null 2>&1')
     os.system('killall hostapd >/dev/null 2>&1')
     os.system('systemctl unmask systemd-resolved >/dev/null 2>&1')
@@ -30,8 +18,11 @@ def reset_setting():
     os.system('sudo iptables -P OUTPUT ACCEPT')
     os.system('sudo iptables -P INPUT ACCEPT')
     os.system('sudo iptables -P FORWARD ACCEPT')
-    ### Start system network service
-    os.system('service NetworkManager start')
+    if interface is not None:
+        # Start system network service
+        # os.system('service NetworkManager start')
+        os.system('nmcli dev set ' + interface + ' managed yes')
+    os.system('echo 0 > captive_portal/flag.txt')
 
 
 def fake_AP_setup(interface):
@@ -39,7 +30,7 @@ def fake_AP_setup(interface):
     os.system('systemctl disable systemd-resolved.service >/dev/null 2>&1')
     os.system('systemctl mask systemd-resolved >/dev/null 2>&1')
     # Stop system network service
-    os.system('service NetworkManager stop')
+    os.system('nmcli dev set ' + interface + ' managed no')
     # Define the interface to be used as the fake AP & Define the fake AP IP address and subnet mask.
     os.system('ifconfig ' + interface + ' inet 10.0.0.1 netmask 255.255.255.0')
     # Define the default gateway.
@@ -57,20 +48,15 @@ def fake_AP_setup(interface):
     --to 8080 / change destination to port 8080
     """
     os.system('sudo iptables --table nat --append PREROUTING --protocol tcp --dport 80 --jump REDIRECT --to-port 8080')
-    os.system('sudo iptables --table nat --append PREROUTING --protocol tcp --dport 443 --jump REDIRECT --to-port 8080')
 
     os.system(
-        'sudo iptables --table nat --append PREROUTING --protocol tcp --dport 80 --jump DNAT --to-destination 10.0.0.1:80')
-    os.system(
-        'sudo iptables --table nat --append PREROUTING --protocol tcp --dport 443 --jump DNAT --to-destination 10.0.0.1:80')
+        'sudo iptables --table nat --append PREROUTING --protocol tcp --dport 80 --jump DNAT --to-destination '
+        '10.0.0.1:8080')
 
     os.system('sudo iptables --table nat --append OUTPUT --protocol tcp --dport 80 --jump REDIRECT --to-port 8080')
-    os.system('sudo iptables --table nat --append OUTPUT --protocol tcp --dport 443 --jump REDIRECT --to-port 8080')
 
     os.system(
-        'sudo iptables --table nat --append OUTPUT --protocol tcp --dport 80 --jump DNAT --to-destination 10.0.0.1:80')
-    os.system(
-        'sudo iptables --table nat --append OUTPUT --protocol tcp --dport 443 --jump DNAT --to-destination 10.0.0.1:80')
+        'sudo iptables --table nat --append OUTPUT --protocol tcp --dport 80 --jump DNAT --to-destination 10.0.0.1:8080')
 
     os.system('sudo iptables --table nat --append POSTROUTING --out-interface ' + interface + ' --jump MASQUERADE')
     os.system('sudo iptables -P FORWARD ACCEPT')
@@ -82,14 +68,10 @@ def run_fake_ap(ap_name):
     # Link the dnsmasq to the configuration file.
     os.system('dnsmasq -C dnsmasq.conf')
     # Start web server
-    command = '"cd captive_portal && npm start ' + ap_name + '"'
-    print(command)
+    command = '"cd captive_portal && npm start ' + '"' + ap_name + '"' + '"'
     os.system('gnome-terminal -- sh -c ' + command)
-    os.system('route add default gw 10.0.0.1')
     # Link the hostapd to the configuration file.
     os.system('hostapd hostapd.conf -B')
-    # os.system('service apache2 start')
-    os.system('route add default gw 10.0.0.1')
 
 
 def hostapd_conf(interface, essid):
