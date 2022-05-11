@@ -1,6 +1,12 @@
 # Evil Twin - Attack and Defense Tool
 
-![](https://github.com/ArielYifee/EvilTwinTool/blob/main/photos/eviltwin.png)
+
+<p align="center">
+
+ ![](https://github.com/ArielYifee/EvilTwinTool/blob/main/photos/eviltwin.png) 
+
+</p>
+
  
 
 ## Introduction:
@@ -11,8 +17,9 @@ How the attack works?
 
 * Step 1: Set up an evil twin access point.
 we looks for a location with popular WiFi. we takes note of the Service Set Identifier (SSID) name. Then, wer uses WiFi Pineapple to set up a new account with the same SSID. Connected devices can't differentiate between legitimate connections and fake versions.
+ 
 
-![](https://github.com/ArielYifee/EvilTwinTool/blob/main/photos/ap.PNG)
+![](https://github.com/ArielYifee/EvilTwinTool/blob/main/photos/eviltwin.png)
 
 * Step 2: Set up a fake captive portal.
 Before you can sign in to most public WiFi accounts, you must fill in data on a generic login page. we will set up an exact copy of this page, hoping that they will trick the victim into offering up authentication details. Once we has those, we can log in to the network and control it.
