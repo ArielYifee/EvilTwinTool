@@ -13,7 +13,8 @@
 This project represents an Evil Twin Attack and Defence tool. 
 using python libraries such as scapy
 The purpose of this project is to create a tool to perform an evil twin attack and defense.
-How the attack works?
+
+***How the attack works?***
 
 * Step 1: Set up an evil twin access point.
 we looks for a location with popular WiFi. we takes note of the Service Set Identifier (SSID) name. Then, wer uses WiFi Pineapple to set up a new account with the same SSID. Connected devices can't differentiate between legitimate connections and fake versions.
