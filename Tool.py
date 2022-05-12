@@ -27,9 +27,9 @@ def attack():
     hotspot_iface = aph.choose_interface(2)
     fap.reset_setting(hotspot_iface)
     fap.fake_AP_setup(hotspot_iface)
-    fap.hostapd_conf(hotspot_iface, "ap[0]")
+    fap.hostapd_conf(hotspot_iface, ap[0])
     fap.dnsmasq_conf(hotspot_iface)
-    fap.run_fake_ap("ap[0]")
+    fap.run_fake_ap(ap[0])
 
     # step 5 start deauthentication attack
     deauth.deauth_initial(True)
