@@ -65,13 +65,13 @@ Notice that you need to choose the network interface that can be switched to 'mo
   Here you will see all the APs that were found in the network scan, and you need to choose the AP you want to defense. If no AP was found, you can choose either to rescan the network or to quit
 
 
-* **step 3: Sniffing the packets and checking for attack.**
+* **Step 3: Sniffing the packets and checking for attack.**
 
 
-* **step 4: search for malicious AP**
+* **Step 4: Search for malicious AP**
 
 
-* **step 5 start deauthentication attack**
+* **Step 5: Start deauthentication attack**
 
 
 
