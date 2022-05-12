@@ -82,7 +82,7 @@ def APs_scanner(interface, flag=0):
             ap_index = int(input(B + "Please enter the number of the AP you want to attack: " + W))
         else:
             ap_index = int(input(B + "Please enter the number of the AP you want to defence: " + W))
-    # Print the choosen AP
+        # Print the choosen AP
         print(P + "You choose the AP: [" + str(ap_index) + "] - BSSID: " + APs_list[ap_index][
             BSSID] + " Channel:" + str(
             APs_list[ap_index][CHANNEL]) + " AP name: " + APs_list[ap_index][ESSID] + W)
@@ -106,7 +106,7 @@ def devices_scanner(interface, ap):
     print(P + "*** Step 3:  Choosing a target to attack. *** \n" + W)
     input(B + "Press Enter to continue........." + W)
     print(P + "\nScanning for devices that connected to: " + ap[ESSID] + " ..." + W)
-    # Sniffing packets - scanning the network for devices which are connected to the choosen AP
+    # Sniffing packets - scanning the network for devices which are connected to the chosen AP
     global network
     network = ap
     # We need the device to send packet to the AP and it may take time, so we double the scan time
@@ -147,12 +147,13 @@ def devices_scanner(interface, ap):
 def device_scan_pkt(pkt):
     # We are interested in packets that send from the chosen AP to a device (not broadcast)
     # ff:ff:ff:ff:ff:ff - broadcast address
-    if (pkt.addr2 == network[BSSID] or pkt.addr3 == network[BSSID]) and pkt.addr1 != "ff:ff:ff:ff:ff:ff":
-        if pkt.addr1 not in users_list:
-            if pkt.addr2 != pkt.addr1 and pkt.addr1 != pkt.addr3:
-                # Add the new-found device to the device list
-                users_list.append(pkt.addr1)
-                print(P + "Device with MAC address: " + pkt.addr1 + " was found." + W)
+    if pkt.haslayer(Dot11):
+        if (pkt.addr2 == network[BSSID] or pkt.addr3 == network[BSSID]) and pkt.addr1 != "ff:ff:ff:ff:ff:ff":
+            if pkt.addr1 not in users_list:
+                if pkt.addr2 != pkt.addr1 and pkt.addr1 != pkt.addr3:
+                    # Add the new-found device to the device list
+                    users_list.append(pkt.addr1)
+                    print(P + "Device with MAC address: " + pkt.addr1 + " was found." + W)
 
 
 def choose_interface(flag):
