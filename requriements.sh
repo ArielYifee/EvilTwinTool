@@ -10,5 +10,4 @@ sudo apt install nodejs npm
 npm install -g nodemon
 npm install express
 sudo apt-get install python3.8
-sudo apt-get install iptables
 npm install body-parser

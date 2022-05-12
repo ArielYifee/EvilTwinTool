@@ -1,5 +1,5 @@
 from scapy.all import *
-from scapy.layers.dot11 import Dot11, Dot11Beacon, Dot11Elt
+from scapy.layers.dot11 import Dot11, Dot11Beacon, Dot11Elt, Dot11FCS
 import AP_Handler as aph
 
 W = '\033[0m'  # white
@@ -16,7 +16,7 @@ dup_APs_list = []  # [essid, bssid, channel]
 essids_set = set()
 
 
-def deauth_detector(interface, ap, flag=False):
+def deauth_detector(interface, ap, flag):
     global ap_mac
     ap_mac = ap[BSSID]
     if not flag:
@@ -26,9 +26,10 @@ def deauth_detector(interface, ap, flag=False):
                 "do "
                 "deathentication attack to the AP you choose. \n" + W)
         input(B + "Press Enter to continue.........\n" + W)
-    # Sniffing packets - searching for deauthentication packets that are sending to the choosen AP
-    sniff(iface=interface, prn=check_packet, timeout=search_time)
-    if counter == 30:
+        print(P + "   Scanning for deauthentication attack ...\n" + W)
+    # Sniffing packets - searching for deauthentication packets that are sending to the chosen AP
+    sniff(iface=interface, prn=check_packet, stop_filter=stopfilter)
+    if counter >= 40:
         print(R + "WARNING!! your network in attack \n" + W)
         input(B + "Press enter to start protecting..... \n" + W)
         return True
@@ -45,14 +46,23 @@ def check_packet(pkt):
     # Deauthentication frame is management frame (type 0) and subtype 12 (0xC)
     # Management frames are used by IEEE 802.11 to permit a wireless client to negotiate with a Wireless Access Point
     global counter
-    if pkt.type == 0 and pkt.subtype == 0xC:
-        try:
-            # If we capture deauthentication packet that intended to the choosen AP
-            if ap_mac in str(pkt.addr2):
-                counter += 1
-                print(R + "Deauthentication packet has been sniffed. Packet number: " + str(counter) + W)
-        except:
-            print("Failed sniff packets")
+    if (pkt.addr2 == ap_mac or pkt.addr3 == ap_mac) and pkt.addr1 != "ff:ff:ff:ff:ff:ff":
+        if pkt.haslayer(Dot11FCS):
+            if pkt.type == 0 and pkt.subtype == 0xC:
+                try:
+                    # If we capture deauthentication packet that intended to the choosen AP
+                    if ap_mac in str(pkt.addr2):
+                        counter += 1
+                        print(R + "Deauthentication packet has been sniffed. Packet number: " + str(counter) + W)
+                except:
+                    print("Failed sniff packets")
+
+
+def stopfilter(x):
+    if counter >= 40:
+        return True
+    else:
+        return False
 
 
 def change_channel(interface):

@@ -46,6 +46,7 @@ def attack():
         except:
             flag = 0
         time.sleep(5)
+
     print(P + "\n*** Target has entered a password you can watch it  at captive_portal/password.txt ***\n" + W)
 
     fap.remove_conf_files()
@@ -63,7 +64,7 @@ def defence():
     # step 2 scan all the access point around and choose one to protect
     ap = aph.APs_scanner(interface, 1)  # [essid, bssid, channel] = [name, mac address, channel]
     # step 3: Sniffing the packets and checking for attack.
-    attack_detected = df.deauth_detector(interface, ap)
+    attack_detected = df.deauth_detector(interface, ap, False)
     if attack_detected:
         # step 4 search for malicious AP
         mal_ap = df.APs_scan_duplications(interface=interface, ap=ap)
