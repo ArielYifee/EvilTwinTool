@@ -49,7 +49,7 @@ Notice that this network interface needs to be in 'managed mode', and that you c
 
   Here we will start running the fake AP. First, we will create the configuration files using create_conf_files.py. Second, we activate the fake AP
 After the fake AP will start running, the attacked client will be able to connect to it. After the client conected
-Notice that the IP of the fake AP will be - 10.0.0.1 When the fake AP start running a new terminal, that will run index2.js, will be opened in order to run the web server
+Notice that the IP of the fake AP will be - 10.0.0.1 When the fake AP start running a new terminal, that will run app.js, will be opened in order to run the web server
 
 
 ***How the defense works?***
