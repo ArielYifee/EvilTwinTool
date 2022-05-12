@@ -21,7 +21,7 @@ def change_channel(interface):
         try:
             if os.system('iwconfig %s channel %d' % (interface, channel_switch)) != 0:
                 raise Exception()
-            # switch channel in range [1,14] each 0.5 seconds
+            # switch channel in range [1,14] every 0.5 second.
             channel_switch = channel_switch % 14 + 1
             time.sleep(0.5)
         except:
@@ -29,7 +29,7 @@ def change_channel(interface):
 
 
 def packet_handler(packet):
-    # We are interested only in Beacon frame
+    # We are interested only in Beacon frames.
     # Beacon frames are transmitted periodically, they serve to announce the presence of a wireless LAN
     if packet.haslayer(Dot11Beacon):
         # Get the source MAC address - BSSID of the AP
@@ -47,7 +47,7 @@ def packet_handler(packet):
             APs_list.append([essid, bssid, channel])
 
 
-#  After the user choose the AP he want to attack, we want to set the interface's channel to the same channel as the choosen AP.
+#  After the user chooses the AP he wants to attack, we'll set the interface's channel to the same channel as the choosen AP.
 def set_channel(channel, interface):
     if os.system('iwconfig %s channel %d' % (interface, channel)) != 0:
         sys.exit(R + "can't switch between channels" + W)
@@ -100,8 +100,8 @@ def APs_scanner(interface, flag=0):
             APs_scanner(interface)
 
 
-### In this fucntion we scan the network for devices who are connected to the choosen AP.
-### We present to the user all the devices that were found, and he choose which device he want to attack.
+### In this fucntion we scan the network for devices which are connected to the choosen AP.
+### We present all the available devices nearby and then the user can chose which one to attack.
 def devices_scanner(interface, ap):
     print(P + "*** Step 3:  Choosing a target to attack. *** \n" + W)
     input(B + "Press Enter to continue........." + W)
@@ -109,7 +109,7 @@ def devices_scanner(interface, ap):
     # Sniffing packets - scanning the network for devices which are connected to the chosen AP
     global network
     network = ap
-    # We need the device to send packet to the AP and it may take time, so we double the scan time
+    # We need the device to send packet to the AP and it may take time, in order to do so we double the scan time.
     sniff(iface=interface, prn=device_scan_pkt, timeout=search_time * 2)
     num_of_devices = len(users_list)
     # If at least one device was found, print all the found devices
@@ -123,7 +123,6 @@ def devices_scanner(interface, ap):
         device_index = input(B +
                              "Please enter the number of the device you want to attack or enter 'R' if you want to rescan: " + W)
         if device_index == 'R':
-            # Rescan
             devices_scanner(interface, ap)
         elif device_index.isnumeric():
             # device was chosen
@@ -132,7 +131,7 @@ def devices_scanner(interface, ap):
             return users_list[int(device_index)]
             # deauth_attack()
     else:
-        # If no device was found.
+        # If no device was found during scanning.
         rescan = input(B + "No devices were found. Do you want to rescan? [Y/n] " + W)
         if rescan == "n":
             print(R + "  Bye.  " + W)
