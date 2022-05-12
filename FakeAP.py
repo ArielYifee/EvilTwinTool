@@ -3,16 +3,16 @@ import os
 
 def reset_setting(interface=None):
     # Stop and kill the hostapd and dnsmasq services.
-    os.system('service hostapd stop')  # hostapd (host access point daemon) for make access point
-    os.system('service dnsmasq stop')  # dsnmasq is to make DNS and DHCP server
+    os.system('service hostapd stop')  # hostapd (host access point daemon) access point
+    os.system('service dnsmasq stop')  # dsnmasq to enable DNS and DHCP server
     os.system('killall dnsmasq >/dev/null 2>&1')
     os.system('killall hostapd >/dev/null 2>&1')
     os.system('systemctl unmask systemd-resolved >/dev/null 2>&1')
     os.system('systemctl enable systemd-resolved.service >/dev/null 2>&1')
     os.system('systemctl start systemd-resolved >/dev/null 2>&1')
     # drop all iptables rules
-    os.system('sudo iptables -F')
-    os.system('sudo iptables -X')
+    os.system('sudo iptables -F') # Flush the selected chain (all the chains in the table if none is given). This is equivalent to deleting all the rules one by one
+    os.system('sudo iptables -X') # Deletes the optional user-defined chain specified
     os.system('sudo iptables --table nat -F')
     os.system('sudo iptables --table nat -X')
     os.system('sudo iptables -P OUTPUT ACCEPT')
@@ -29,7 +29,7 @@ def fake_AP_setup(interface):
     os.system('systemctl stop systemd-resolved >/dev/null 2>&1')
     os.system('systemctl disable systemd-resolved.service >/dev/null 2>&1')
     os.system('systemctl mask systemd-resolved >/dev/null 2>&1')
-    # Stop system network service
+    # Stops system network services
     os.system('nmcli dev set ' + interface + ' managed no')
     # Define the interface to be used as the fake AP & Define the fake AP IP address and subnet mask.
     os.system('ifconfig ' + interface + ' inet 10.0.0.1 netmask 255.255.255.0')
