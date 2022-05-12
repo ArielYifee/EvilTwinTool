@@ -77,7 +77,7 @@ def packet_handler(packet):
         # Get the ESSID (name) of the AP
         essid = packet[Dot11Elt].info.decode()
         # Check if the new found AP is with the same name of our AP
-        if essid == ap_name:
+        if essid == ap_name and bssid != ap_mac:
             essids_set.add(essid)
             # network_stats() function extracts some useful information from the network - such as the channel
             stats = packet[Dot11Beacon].network_stats()
@@ -87,7 +87,8 @@ def packet_handler(packet):
             dup_APs_list.append([essid, bssid, channel])
 
 
-# After the user choose the AP he want to attack, we want to set the interface's channel to the same channel as the choosen AP.
+# After the user choose the AP he want to attack, we want to set the interface's channel to the same channel as the
+# choosen AP.
 def set_channel(channel, interface):
     if os.system('iwconfig %s channel %d' % (interface, channel)) != 0:
         sys.exit(R + "can't switch between channels" + W)
@@ -105,7 +106,9 @@ def APs_scan_duplications(interface, ap):
     # prn – function to apply to each packet
     # timeout – stop sniffing after a given time
     global ap_name
+    global ap_mac
     ap_name = ap[ESSID]
+    ap_mac = ap[BSSID]
     sniff(iface=interface, prn=packet_handler, timeout=search_time)
     num_of_APs = len(dup_APs_list)
     # If at least one AP was found, print all the found APs
